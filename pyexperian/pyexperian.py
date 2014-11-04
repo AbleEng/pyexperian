@@ -1,5 +1,8 @@
-import requests
+import sys
+sys.path.append('..')
+
 from lib import dicttoxml
+import requests
 import xmltodict
 import urllib
 from xml.dom.minidom import parseString
