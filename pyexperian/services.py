@@ -1,13 +1,9 @@
-import sys
-sys.path.append('..')
-
-from lib import dicttoxml
+from pyexperian.lib import dicttoxml
+from pyexperian import constants, exceptions
 import requests
 import xmltodict
 import urllib
 from xml.dom.minidom import parseString
-import constants
-import exceptions
 import re
 import time
 import logging

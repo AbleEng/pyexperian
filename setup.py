@@ -11,7 +11,7 @@ config = {
     'author_email': 'carlos@hiable.com',
     'version': '0.1',
     'install_requires': ['nose', 'requests', 'xmltodict'],
-    'packages': ['pyexperian'],
+    'packages': ['pyexperian', 'pyexperian.test', 'pyexperian.lib'],
     'scripts': [],
     'name': 'pyexperian'
 }

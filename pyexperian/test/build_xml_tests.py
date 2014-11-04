@@ -1,4 +1,4 @@
-from lib import dicttoxml
+from pyexperian.lib import dicttoxml
 
 
 def _uglify_xml(xml_output):

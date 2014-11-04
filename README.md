@@ -1,6 +1,6 @@
 ### Usage
 
-    from pyexperian import pyexperian
+    from pyexperian import services
     
     config = {
         'user_id': 'USER_ID', 
@@ -12,9 +12,13 @@
         'ecals_url': 'ECALS_URL'
     }; 
     
-    bpp = pyexperian.BusinessPremierProfile(config);
+    bpp = services.BusinessPremierProfile(config);
     
     resp = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
     
-    # Print the XML Response
     print(resp.text)
+    
+### Debug 
+
+    from pyexperian import services
+    services.enable_debug()

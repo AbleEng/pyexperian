@@ -1,6 +1,6 @@
 # These tests verify the Experian authentication exam.
 
-from pyexperian import pyexperian, exceptions
+from pyexperian import services, exceptions
 from nose.tools import raises, with_setup
 import requests
 import re
@@ -28,13 +28,13 @@ def teardown():
 @with_setup(setup, teardown)
 @raises(exceptions.InvalidNetConnectUrlException)
 def test_auth_case_1():
-    _ecals = pyexperian.Ecals("http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.1&responseType=text/plain")
+    _ecals = services.Ecals("http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.1&responseType=text/plain")
     _ecals.get_net_connect_url()
 
 @with_setup(setup, teardown)
 def test_auth_case_2():
     config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.2&responseType=text/plain'
-    bpp = pyexperian.BusinessPremierProfile(config);
+    bpp = services.BusinessPremierProfile(config);
 
     try:
         bpp.query(business={'name': 'norecordco', 'address':{'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
@@ -45,7 +45,7 @@ def test_auth_case_2():
 @with_setup(setup, teardown)
 def test_auth_case_3():
     config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.3&responseType=text/plain'
-    bpp = pyexperian.BusinessPremierProfile(config)
+    bpp = services.BusinessPremierProfile(config)
 
     try:
         bpp.query(business={'name': 'norecordco', 'address': {'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
@@ -57,6 +57,6 @@ def test_auth_case_3():
 @raises(requests.exceptions.ConnectionError)
 def test_auth_case_4():
     config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.4&responseType=text/plain'
-    bpp = pyexperian.BusinessPremierProfile(config)
+    bpp = services.BusinessPremierProfile(config)
 
     bpp.query(business={'name': 'norecordco', 'address': {'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
