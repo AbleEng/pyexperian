@@ -114,7 +114,7 @@ class BaseProduct():
         if 'phone' in business_data:
             business['Phone'] = {'Number': business_data['phone']}
 
-        if 'address' in business_data:
+        if 'address' in business_data and business_data['address']:
             business['CurrentAddress'] = BaseProduct._translate_address(business_data['address'])
 
         return business
@@ -155,7 +155,7 @@ class BaseProduct():
         if 'title' in owner_data:
             business_owner['Title'] = owner_data['title']
 
-        if 'address' in owner_data:
+        if 'address' in owner_data and owner_data['address']:
             business_owner['CurrentAddress'] = BaseProduct._translate_address(owner_data['address'])
 
         driver_license = {}
@@ -212,7 +212,7 @@ class BaseProduct():
         response_dict = xmltodict.parse(response.text)['NetConnectResponse']
 
         if 'ErrorMessage' in response_dict and response_dict['ErrorMessage'] == 'Invalid request format':
-            raise exceptions.ConfigException()
+            raise exceptions.BadRequestException()
 
         return response
 

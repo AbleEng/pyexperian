@@ -17,9 +17,9 @@ class MaxAuthAttemptsException(Exception):
 
 class FailedAuthException(Exception):
     def __init__(self):
-        super(FailedAuthException, self).__init__("Wrong USER_ID and USER_PW.")
+        super(FailedAuthException, self).__init__("Bad credentials.  Did you remember to reset your password?")
 
 
-class ConfigException(Exception):
+class BadRequestException(Exception):
     def __init__(self):
-        super(ConfigException, self).__init__("Check your config values and try again.")
+        super(BadRequestException, self).__init__("Check your config and query data for bad or missing values.")
