@@ -27,17 +27,17 @@
 
 #### Business Premier Profile
 
-    bpp = services.BusinessPremierProfile(config)
+    bpp = services.BusinessPremierProfile(config, ecals)
     resp = bpp.query(business={..., address={...}})
 
 #### SBCS
 
-    sbcs = services.SBCS(config)
+    sbcs = services.SBCS(config, ecals)
     resp = sbcs.query(business={..., address={...}})
     
 #### Business Owner Profile
 
-    bop = services.BusinessOwnerProfile(config)
+    bop = services.BusinessOwnerProfile(config, ecals)
     resp = bop.query(business={..., address={...}}, owner={..., address={}})
     
 
