@@ -9,7 +9,7 @@ config = {
     'url': 'https://github.com/AbleEng/pyexperian',
     'download_url': 'https://github.com/AbleEng/pyexperian',
     'author_email': 'carlos@hiable.com',
-    'version': '0.1',
+    'version': '0.2',
     'install_requires': ['nose', 'requests', 'xmltodict'],
     'packages': ['pyexperian', 'pyexperian.test', 'pyexperian.lib'],
     'scripts': [],
