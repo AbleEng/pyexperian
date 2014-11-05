@@ -4,7 +4,7 @@ except ImportError:
     from distutils.core import setup
 
 config = {
-    'description': 'PyExperian',
+    'description': 'Python wrapper for Experian\'s Net Connect API',
     'author': 'Carlos Eduardo Rivera',
     'url': 'https://github.com/AbleEng/pyexperian',
     'download_url': 'https://github.com/AbleEng/pyexperian',
