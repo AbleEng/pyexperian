@@ -1,3 +1,7 @@
+## Installation
+
+   pip install pyexperian
+
 ## Usage
 
     from pyexperian import services
@@ -8,11 +12,12 @@
         'eai': 'EAI', 
         'vendor_number': 'VENDOR_NUMBER', 
         'sub_code': 'SUB_CODE', 
-        'db_host': 'DB_HOST', 
-        'ecals_url': 'ECALS_URL'
+        'db_host': 'DB_HOST'
     };
     
-    bpp = services.BusinessPremierProfile(config)
+    ecals = services.Ecals('ECALS_URL')
+    
+    bpp = services.BusinessPremierProfile(config, ecals)
     
     resp = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
     

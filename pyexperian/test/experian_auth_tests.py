@@ -33,8 +33,8 @@ def test_auth_case_1():
 
 @with_setup(setup, teardown)
 def test_auth_case_2():
-    config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.2&responseType=text/plain'
-    bpp = services.BusinessPremierProfile(config);
+    ecals = services.Ecals('http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.2&responseType=text/plain')
+    bpp = services.BusinessPremierProfile(config, ecals);
 
     try:
         bpp.query(business={'name': 'norecordco', 'address':{'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
@@ -44,8 +44,8 @@ def test_auth_case_2():
 
 @with_setup(setup, teardown)
 def test_auth_case_3():
-    config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.3&responseType=text/plain'
-    bpp = services.BusinessPremierProfile(config)
+    ecals = services.Ecals('http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.3&responseType=text/plain')
+    bpp = services.BusinessPremierProfile(config, ecals)
 
     try:
         bpp.query(business={'name': 'norecordco', 'address': {'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
@@ -56,7 +56,7 @@ def test_auth_case_3():
 @with_setup(setup, teardown)
 @raises(requests.exceptions.ConnectionError)
 def test_auth_case_4():
-    config['ecals_url'] = 'http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.4&responseType=text/plain'
-    bpp = services.BusinessPremierProfile(config)
+    ecals = services.Ecals('http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnect&serviceVersion=0.4&responseType=text/plain')
+    bpp = services.BusinessPremierProfile(config, ecals)
 
     bpp.query(business={'name': 'norecordco', 'address': {'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})

@@ -14,5 +14,5 @@ def test_net_connect_url():
 
 
 def test_fetch_net_connect_url():
-    lookup = services.Ecals("http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnectDemo&serviceVersion=2.0&responseType=text/plain")
-    assert lookup.get_net_connect_url() is not None
+    ecals = services.Ecals("http://www.experian.com/lookupServlet1?lookupServiceName=AccessPoint&lookupServiceVersion=1.0&serviceName=NetConnectDemo&serviceVersion=2.0&responseType=text/plain")
+    assert ecals.get_net_connect_url() is not None

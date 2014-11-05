@@ -25,9 +25,9 @@ class BaseProduct():
 
     failed_auth_attempts = 0
 
-    def __init__(self, config={}):
+    def __init__(self, config, ecals):
         self.config = config
-        self.ecals = Ecals(config['ecals_url'])
+        self.ecals = ecals
 
     # Wrap the product data with request headers.
     def _wrap_with_header(self, product_data={}):
