@@ -183,7 +183,7 @@ class BaseProduct():
         header = "\n======%s======\n" % _header.upper() if _header else "\n"
         logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
 
-    def _post_xml(self, xml=''):
+    def _post_xml(self, xml):
         # Lock them out if too many bad auth attempts
         if self.failed_auth_attempts >= constants.MAX_AUTH_ATTEMPTS:
             raise exceptions.MaxAuthAttemptsException()
@@ -200,21 +200,28 @@ class BaseProduct():
 
         response = requests.post(url, headers=headers, auth=auth, data=data)
 
-        BaseProduct._log_pretty_xml(response.text, 'response')
+        logging.info(response.text)
 
-        # TODO using DEMO environment this is the only way to test for bad AUTH.
-        if re.search('<!DOCTYPE html', response.text):
-            self.failed_auth_attempts += 1
-            raise exceptions.FailedAuthException()
-        else:
+        if re.search('^<\?xml', response.text, re.IGNORECASE):
+            BaseProduct._log_pretty_xml(response.text, 'response')
+
             self.failed_auth_attempts = 0
 
-        response_dict = xmltodict.parse(response.text)['NetConnectResponse']
+            response_dict = xmltodict.parse(response.text)['NetConnectResponse']
 
-        if 'ErrorMessage' in response_dict and response_dict['ErrorMessage'] == 'Invalid request format':
-            raise exceptions.BadRequestException()
+            if 'ErrorMessage' in response_dict and response_dict['ErrorMessage'] == 'Invalid request format':
+                raise exceptions.BadRequestException()
 
-        return response
+            return response.text
+
+        elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
+
+            # TODO using DEMO environment this is the only way to test for bad AUTH.
+            if re.search('app\.logonUrl', response.text):
+                self.failed_auth_attempts += 1
+                raise exceptions.FailedAuthException()
+
+        return False
 
 
 class BusinessPremierProfile(BaseProduct):
