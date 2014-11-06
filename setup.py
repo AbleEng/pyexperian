@@ -10,7 +10,7 @@ config = {
     'download_url': 'https://github.com/AbleEng/pyexperian',
     'author_email': 'carlos@hiable.com',
     'version': '0.5',
-    'install_requires': ['nose', 'requests', 'xmltodict'],
+    'install_requires': ['nose', 'requests>=2.2.1', 'xmltodict'],
     'packages': ['pyexperian', 'pyexperian.test', 'pyexperian.lib'],
     'scripts': [],
     'name': 'pyexperian'
