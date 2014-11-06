@@ -212,8 +212,6 @@ class BaseProduct():
             if 'ErrorMessage' in response_dict and response_dict['ErrorMessage'] == 'Invalid request format':
                 raise exceptions.BadRequestException()
 
-            return response.text
-
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
             # TODO using DEMO environment this is the only way to test for bad AUTH.
@@ -221,7 +219,7 @@ class BaseProduct():
                 self.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return False
+        return response
 
 
 class BusinessPremierProfile(BaseProduct):
