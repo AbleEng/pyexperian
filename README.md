@@ -1,6 +1,6 @@
 ## Installation
 
-   pip install pyexperian
+    pip install pyexperian
 
 ## Usage
 
