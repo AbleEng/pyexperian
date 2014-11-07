@@ -60,40 +60,37 @@ class BaseProduct():
     def _translate_addons(addons_data={}):
         addons = {}
 
-        # Return a list of similars
-        if 'list' in addons_data:
-            addons['List'] = 'Y' if addons_data.get('list').lower() == 'y' else 'N'
-
         # Include intelliscore
-        if 'score' in addons_data:
-            addons['SCORE'] = 'Y' if addons_data.get('score').lower() == 'y' else 'N'
+        if addons_data.get('score', None):
+            addons['SCORE'] = addons_data['score']
 
         # Request owner profile only (BOP)
-        if 'stand_alone' in addons_data:
-            addons['StandAlone'] = 'Y' if addons_data.get('stand_alone').lower() == 'y' else 'N'
+        if addons_data.get('stand_alone', None):
+            addons['StandAlone'] = addons_data['stand_alone']
 
         # Request Business Profile with Intelliscore
-        if 'bp' in addons_data:
-            addons['BP'] = 'Y' if addons_data.get('bp').lower() == 'y' else 'N'
+        if addons_data.get('bp', None):
+            addons['BP'] = addons_data['bp']
 
-        if 'list' in addons_data:
-            addons['List'] = 'Y' if addons_data.get('list').lower() == 'y' else 'N'
+        # Return a list of similars
+        if addons_data.get('list', None):
+            addons['List'] = addons_data['list']
 
         return addons
 
     @staticmethod
     def _translate_address(address_data={}):
         address = {}
-        if 'street' in address_data:
+        if address_data.get('street', None):
             address['Street'] = address_data['street']
 
-        if 'city' in address_data:
+        if address_data.get('city', None):
             address['City'] = address_data['city']
 
-        if 'state' in address_data:
+        if address_data.get('state', None):
             address['State'] = address_data['state']
 
-        if 'zip' in address_data:
+        if address_data.get('zip', None):
             address['Zip'] = address_data['zip']
 
         return address
@@ -102,19 +99,19 @@ class BaseProduct():
     @staticmethod
     def _translate_business(business_data={}):
         business = {}
-        if 'name' in business_data:
+        if business_data.get('name', None):
             business['BusinessName'] = business_data['name']
 
-        if 'alt_name' in business_data:
+        if business_data.get('alt_name', None):
             business['AlternateName'] = business_data['alt_name']
 
-        if 'tax_id' in business_data:
+        if business_data.get('tax_id', None):
             business['TaxId'] = business_data['tax_id']
 
-        if 'phone' in business_data:
+        if business_data.get('phone', None):
             business['Phone'] = {'Number': business_data['phone']}
 
-        if 'address' in business_data and business_data['address']:
+        if business_data.get('address', None):
             business['CurrentAddress'] = BaseProduct._translate_address(business_data['address'])
 
         return business
@@ -125,50 +122,50 @@ class BaseProduct():
 
         owner_name = {}
 
-        if 'first_name' in owner_data:
+        if owner_data.get('first_name', None):
             owner_name['First'] = owner_data['first_name']
 
-        if 'middle_name' in owner_data:
+        if owner_data.get('middle_name', None):
             owner_name['Middle'] = owner_data['middle_name']
 
-        if 'last_name' in owner_data:
+        if owner_data.get('last_name', None):
             owner_name['Surname'] = owner_data['last_name']
 
-        if 'suffix' in owner_data:
+        if owner_data.get('suffix', None):
             owner_name['Gen'] = owner_data['suffix']
 
         if owner_name:
             business_owner['OwnerName'] = owner_name
 
-        if 'ssn' in owner_data:
+        if owner_data.get('ssn', None):
             business_owner['SSN'] = owner_data['ssn']
 
-        if 'age' in owner_data:
+        if owner_data.get('age', None):
             business_owner['Age'] = owner_data['age']
 
-        if 'dob' in owner_data:
+        if owner_data.get('dob', None):
             business_owner['DOB'] = owner_data['dob']
 
-        if 'yob' in owner_data:
+        if owner_data.get('yob', None):
             business_owner['YOB'] = owner_data['yob']
 
-        if 'title' in owner_data:
+        if owner_data.get('title', None):
             business_owner['Title'] = owner_data['title']
 
-        if 'address' in owner_data and owner_data['address']:
+        if owner_data.get('address', None):
             business_owner['CurrentAddress'] = BaseProduct._translate_address(owner_data['address'])
 
         driver_license = {}
-        if 'driver_license_num' in owner_data:
+        if owner_data.get('driver_license_num', None):
             driver_license['Number'] = owner_data['driver_license_num']
 
-        if 'driver_license_state' in owner_data:
+        if owner_data.get('driver_license_state', None):
             driver_license['State'] = owner_data['driver_license_state']
 
         if driver_license:
             business_owner['DriverLicense'] = driver_license
 
-        if 'age' in owner_data:
+        if owner_data.get('age', None):
             business_owner['Age'] = owner_data['age']
 
         return business_owner
