@@ -99,6 +99,7 @@ class BaseProduct():
     @staticmethod
     def _translate_business(business_data={}):
         business = {}
+
         if business_data.get('name', None):
             business['BusinessName'] = business_data['name']
 
@@ -113,6 +114,12 @@ class BaseProduct():
 
         if business_data.get('address', None):
             business['CurrentAddress'] = BaseProduct._translate_address(business_data['address'])
+
+        if business_data.get('bis_file_number', None):
+            business['BISFileNumber'] = business_data['bis_file_number']
+
+        if business_data.get('bis_list_number', None):
+            business['BISListNumber'] = business_data['bis_list_number']
 
         return business
 
@@ -216,10 +223,11 @@ class BaseProduct():
                 self.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return response
+        return response_dict['Products'][self.product_id], response.text
 
 
 class BusinessPremierProfile(BaseProduct):
+    product_id = 'PremierProfile'
 
     def query(self, business={}, owner={}, addons={}):
         request_data = self._get_base_request_data()
@@ -235,12 +243,13 @@ class BusinessPremierProfile(BaseProduct):
             request_data['AddOns'] = BaseProduct._translate_addons(addons)
 
         xml = BaseProduct._to_xml(
-            self._wrap_with_header({'PremierProfile': request_data}))
+            self._wrap_with_header({self.product_id: request_data}))
 
         return self._post_xml(xml)
 
 
 class BusinessOwnerProfile(BaseProduct):
+    product_id = 'BusinessProfile'
 
     def query(self, business={}, owner={}, addons={}):
         request_data = self._get_base_request_data()
@@ -267,12 +276,13 @@ class BusinessOwnerProfile(BaseProduct):
             request_data['AddOns'] = BaseProduct._translate_addons(addons)
 
         xml = BaseProduct._to_xml(
-            self._wrap_with_header({'BusinessProfile': request_data}))
+            self._wrap_with_header({self.product_id: request_data}))
 
         return self._post_xml(xml)
 
 
 class SBCS(BaseProduct):
+    product_id = 'SmallBusinessCreditShare'
 
     def query(self, business={}, addons={}, owner={}):
         request_data = self._get_base_request_data()
@@ -297,7 +307,7 @@ class SBCS(BaseProduct):
             })
 
         xml = BaseProduct._to_xml(
-            self._wrap_with_header({'SmallBusinessCreditShare': request_data}))
+            self._wrap_with_header({self.product_id: request_data}))
 
         return self._post_xml(xml)
 
