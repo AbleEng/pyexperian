@@ -24,7 +24,7 @@
     print(resp_blob)
     
     
-### Raw XML query
+#### Raw XML query
 If you don't want to use the simplified query parameters, you can pass in a pure XML string of the entire NetConnectRequest object.
 
     bp = services.BaseProduct(config, ecals)
