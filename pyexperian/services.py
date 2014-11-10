@@ -22,7 +22,7 @@ def disable_debug():
 
 
 class BaseProduct():
-
+    product_id = None
     failed_auth_attempts = 0
 
     def __init__(self, config, ecals):
@@ -55,6 +55,10 @@ class BaseProduct():
                 'VendorNumber': self.config['vendor_number']
             }
         }
+
+    # Pass in the entire NetConnectRequest XML
+    def raw_query(self, xml):
+        return self._post_xml(xml)
 
     @staticmethod
     def _translate_addons(addons_data={}):
@@ -223,7 +227,8 @@ class BaseProduct():
                 self.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return response_dict['Products'][self.product_id], response.text
+
+        return response_dict['Products'], response.text
 
 
 class BusinessPremierProfile(BaseProduct):

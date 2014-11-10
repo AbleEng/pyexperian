@@ -19,10 +19,24 @@
     
     bpp = services.BusinessPremierProfile(config, ecals)
     
-    resp = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
+    resp_dict, resp_blob = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
     
-    print(resp.text)
+    print(resp_blob)
     
+    
+### Raw XML query
+If you don't want to use the simplified query parameters, you can pass in a pure XML string of the entire NetConnectRequest object.
+
+    bp = services.BaseProduct(config, ecals)
+    resp_dict, resp_blob = bp.raw_query("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <NetConnectRequest>
+        ...
+        </NetConnectRequest>
+    """)
+    
+    print(resp_blob)
+
 ## Services
 
 #### Business Premier Profile
