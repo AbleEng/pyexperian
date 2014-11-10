@@ -22,7 +22,6 @@ def disable_debug():
 
 
 class BaseProduct():
-    product_id = None
     failed_auth_attempts = 0
 
     def __init__(self, config, ecals):
@@ -60,8 +59,24 @@ class BaseProduct():
     def raw_query(self, xml):
         return self._post_xml(xml)
 
-    @staticmethod
-    def _translate_addons(addons_data={}):
+    # Helper function to simplify looking for a value nested deeply within a dictionary
+    @classmethod
+    def _get_dict_value(cls, d, key_list):
+        if type(key_list) is not list:
+            key_list = [key_list]
+
+        for key in key_list:
+            if type(key) == str and key in d:
+                d = d[key]
+            elif type(key) == int and len(d) >= key:
+                d = d[key]
+            else:
+                return None
+
+        return d
+
+    @classmethod
+    def _translate_addons(cls, addons_data={}):
         addons = {}
 
         # Include intelliscore
@@ -82,8 +97,8 @@ class BaseProduct():
 
         return addons
 
-    @staticmethod
-    def _translate_address(address_data={}):
+    @classmethod
+    def _translate_address(cls, address_data={}):
         address = {}
         if address_data.get('street', None):
             address['Street'] = address_data['street']
@@ -99,9 +114,8 @@ class BaseProduct():
 
         return address
 
-
-    @staticmethod
-    def _translate_business(business_data={}):
+    @classmethod
+    def _translate_business(cls, business_data={}):
         business = {}
 
         if business_data.get('name', None):
@@ -117,7 +131,7 @@ class BaseProduct():
             business['Phone'] = {'Number': business_data['phone']}
 
         if business_data.get('address', None):
-            business['CurrentAddress'] = BaseProduct._translate_address(business_data['address'])
+            business['CurrentAddress'] = cls._translate_address(business_data['address'])
 
         if business_data.get('bis_file_number', None):
             business['BISFileNumber'] = business_data['bis_file_number']
@@ -127,8 +141,8 @@ class BaseProduct():
 
         return business
 
-    @staticmethod
-    def _translate_owner(owner_data={}):
+    @classmethod
+    def _translate_owner(cls, owner_data={}):
         business_owner = {}
 
         owner_name = {}
@@ -164,7 +178,7 @@ class BaseProduct():
             business_owner['Title'] = owner_data['title']
 
         if owner_data.get('address', None):
-            business_owner['CurrentAddress'] = BaseProduct._translate_address(owner_data['address'])
+            business_owner['CurrentAddress'] = cls._translate_address(owner_data['address'])
 
         driver_license = {}
         if owner_data.get('driver_license_num', None):
@@ -181,24 +195,24 @@ class BaseProduct():
 
         return business_owner
 
-    @staticmethod
     # Finalizes request data and converts to XML string.
-    def _to_xml(data_dict={}):
+    @classmethod
+    def _to_xml(cls, data_dict={}):
         return dicttoxml.dicttoxml(data_dict, attr_type=False, custom_root='NetConnectRequest')
 
-    @staticmethod
-    def _log_pretty_xml(xml, _header=None):
+    @classmethod
+    def _log_pretty_xml(cls, xml, _header=None):
         header = "\n======%s======\n" % _header.upper() if _header else "\n"
         logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
 
     def _post_xml(self, xml):
         # Lock them out if too many bad auth attempts
-        if self.failed_auth_attempts >= constants.MAX_AUTH_ATTEMPTS:
+        if BaseProduct.failed_auth_attempts >= constants.MAX_AUTH_ATTEMPTS:
             raise exceptions.MaxAuthAttemptsException()
 
         url = self.ecals.get_net_connect_url()
 
-        BaseProduct._log_pretty_xml(xml, 'request')
+        self._log_pretty_xml(xml, 'request')
 
         logging.info("Net Connect URL: %s" % url)
 
@@ -211,28 +225,27 @@ class BaseProduct():
         logging.info(response.text)
 
         if re.search('^<\?xml', response.text, re.IGNORECASE):
-            BaseProduct._log_pretty_xml(response.text, 'response')
+            self._log_pretty_xml(response.text, 'response')
 
-            self.failed_auth_attempts = 0
+            BaseProduct.failed_auth_attempts = 0
 
             response_dict = xmltodict.parse(response.text)['NetConnectResponse']
 
-            if 'ErrorMessage' in response_dict and response_dict['ErrorMessage'] == 'Invalid request format':
+            if self._get_dict_value(response_dict, 'ErrorMessage') == 'Invalid request format':
                 raise exceptions.BadRequestException()
 
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
             # TODO using DEMO environment this is the only way to test for bad AUTH.
             if re.search('app\.logonUrl', response.text):
-                self.failed_auth_attempts += 1
+                BaseProduct.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
-
 
         return response_dict['Products'], response.text
 
 
 class BusinessPremierProfile(BaseProduct):
-    product_id = 'PremierProfile'
+    product_id = constants.BUSINESS_PREMIER_PROFILE_ID
 
     def query(self, business={}, owner={}, addons={}):
         request_data = self._get_base_request_data()
@@ -242,19 +255,19 @@ class BusinessPremierProfile(BaseProduct):
         request_data.update(defaults)
 
         if business:
-            request_data['BusinessApplicant'] = BaseProduct._translate_business(business)
+            request_data['BusinessApplicant'] = self._translate_business(business)
 
         if addons:
-            request_data['AddOns'] = BaseProduct._translate_addons(addons)
+            request_data['AddOns'] = self._translate_addons(addons)
 
-        xml = BaseProduct._to_xml(
+        xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
         return self._post_xml(xml)
 
 
 class BusinessOwnerProfile(BaseProduct):
-    product_id = 'BusinessProfile'
+    product_id = constants.BUSINESS_OWNER_PROFILE_ID
 
     def query(self, business={}, owner={}, addons={}):
         request_data = self._get_base_request_data()
@@ -272,22 +285,27 @@ class BusinessOwnerProfile(BaseProduct):
         request_data.update(defaults)
 
         if business:
-            request_data['BusinessApplicant'] = BaseProduct._translate_business(business)
+            request_data['BusinessApplicant'] = self._translate_business(business)
 
         if owner:
-            request_data['BusinessOwner'] = BaseProduct._translate_owner(owner)
+            request_data['BusinessOwner'] = self._translate_owner(owner)
 
         if addons:
-            request_data['AddOns'] = BaseProduct._translate_addons(addons)
+            request_data['AddOns'] = self._translate_addons(addons)
 
-        xml = BaseProduct._to_xml(
+        xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
-        return self._post_xml(xml)
+        resp_dict, resp_xml = self._post_xml(xml)
+
+        if self._get_dict_value(resp_dict, [self.product_id, 'ProcessingMessage', 'ProcessingAction', '@code']) == constants.TERMS_RESPONSE_CODE:
+            raise exceptions.TermsException()
+
+        return resp_dict, resp_xml
 
 
 class SBCS(BaseProduct):
-    product_id = 'SmallBusinessCreditShare'
+    product_id = constants.SBCS_ID
 
     def query(self, business={}, addons={}, owner={}):
         request_data = self._get_base_request_data()
@@ -303,15 +321,15 @@ class SBCS(BaseProduct):
 
         if business:
             request_data.update({
-                'BusinessApplicant': BaseProduct._translate_business(business)
+                'BusinessApplicant': self._translate_business(business)
             })
 
         if addons:
             request_data.update({
-                'AddOns': BaseProduct._translate_addons(addons)
+                'AddOns': self._translate_addons(addons)
             })
 
-        xml = BaseProduct._to_xml(
+        xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
         return self._post_xml(xml)
@@ -319,10 +337,9 @@ class SBCS(BaseProduct):
 
 class Ecals():
 
-    net_connect_url = (None, None)  # (url, time_pulled)
-
     def __init__(self, ecals_url):
         self.ecals_url = ecals_url
+        self.net_connect_url = (None, None)  # (url, time_pulled)
 
     def get_net_connect_url(self):
         # Check if Net Connect URL is expired.
@@ -345,13 +362,13 @@ class Ecals():
         else:
             raise exceptions.EcalsLookupException()
 
-    @staticmethod
-    def is_valid_net_connect_url(url):
+    @classmethod
+    def is_valid_net_connect_url(cls, url):
         hostname = Ecals.get_hostname_from_url(url)
         return '.experian.com' in hostname
 
     # https://www.example.com/blog -> www.example.com
-    @staticmethod
-    def get_hostname_from_url(url):
+    @classmethod
+    def get_hostname_from_url(cls, url):
         match = re.search(r'^https?://([^/]+).*$', url)
         return match.group(1) if match else None

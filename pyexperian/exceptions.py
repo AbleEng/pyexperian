@@ -23,3 +23,8 @@ class FailedAuthException(Exception):
 class BadRequestException(Exception):
     def __init__(self):
         super(BadRequestException, self).__init__("Check your config and query data for bad or missing values.")
+
+
+class TermsException(Exception):
+    def __init__(self):
+        super(TermsException, self).__init__("Re-submit your request if you have consent to request the customer's personal credit.")
