@@ -28,3 +28,4 @@ class BadRequestException(Exception):
 class TermsException(Exception):
     def __init__(self):
         super(TermsException, self).__init__("Re-submit your request if you have consent to request the customer's personal credit.")
+
