@@ -22,7 +22,7 @@ config = {
     'packages': ['pyexperian', 'pyexperian.test', 'pyexperian.lib'],
     'scripts': [],
     'name': 'pyexperian',
-    'keywords': 'experian net connect ecals'
+    'keywords': 'experian netconnect ecals'
 }
 
 setup(**config)

@@ -236,8 +236,10 @@ class BaseProduct():
 
             if self._get_dict_value(response_dict, 'ErrorMessage') == 'Invalid request format':
                 raise exceptions.BadRequestException()
-            elif self._get_dict_value(response_dict, ['Products', self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code']) == 'NO RECORD':
-                return None, response.text
+            else:
+                profile_type_code = self._get_dict_value(response_dict, ['Products', self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
+                if profile_type_code and profile_type_code.strip() == 'NO RECORD':
+                    return None, response.text
 
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
