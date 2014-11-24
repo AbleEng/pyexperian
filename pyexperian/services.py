@@ -59,6 +59,17 @@ class BaseProduct():
     def raw_query(self, xml):
         return self._post_xml(xml)
 
+
+    # Translates value to 'Y' or 'N'
+    @classmethod
+    def _translate_to_bool(cls, val):
+        if type(val) == str:
+            val = val.upper()
+            if val in ['Y', 'N']:
+                return val
+
+        return 'Y' if bool(val) else 'N'
+
     # Helper function to simplify looking for a value nested deeply within a dictionary
     @classmethod
     def _get_dict_value(cls, d, key_list):
@@ -81,19 +92,19 @@ class BaseProduct():
 
         # Include intelliscore
         if addons_data.get('score', None):
-            addons['SCORE'] = addons_data['score']
+            addons['SCORE'] = cls._translate_to_bool(addons_data['score'])
 
         # Request owner profile only (BOP)
         if addons_data.get('stand_alone', None):
-            addons['StandAlone'] = addons_data['stand_alone']
+            addons['StandAlone'] = cls._translate_to_bool(addons_data['stand_alone'])
 
         # Request Business Profile with Intelliscore
         if addons_data.get('bp', None):
-            addons['BP'] = addons_data['bp']
+            addons['BP'] = cls._translate_to_bool(addons_data['bp'])
 
         # Return a list of similars
         if addons_data.get('list', None):
-            addons['List'] = addons_data['list']
+            addons['List'] = cls._translate_to_bool(addons_data['list'])
 
         return addons
 
@@ -236,10 +247,15 @@ class BaseProduct():
 
             if self._get_dict_value(response_dict, 'ErrorMessage') == 'Invalid request format':
                 raise exceptions.BadRequestException()
-            else:
-                profile_type_code = self._get_dict_value(response_dict, ['Products', self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
-                if profile_type_code and profile_type_code.strip() == 'NO RECORD':
+
+            profile_type_code = self._get_dict_value(response_dict, ['Products', self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
+            if profile_type_code:
+                profile_type_code = profile_type_code.strip()
+                if profile_type_code == 'NO RECORD':
                     return None, response.text
+                # elif profile_type_code == 'LIST':
+
+
 
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
@@ -248,7 +264,7 @@ class BaseProduct():
                 BaseProduct.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return response_dict['Products'], response.text
+        return response_dict['Products'][self.product_id], response.text
 
 
 class BusinessPremierProfile(BaseProduct):

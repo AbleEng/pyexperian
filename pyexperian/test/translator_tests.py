@@ -25,3 +25,12 @@ def test_good_business():
     assert 'BusinessName' in translated
     assert 'CurrentAddress' in translated
     assert 'Street' not in translated['CurrentAddress'] and 'City' in translated['CurrentAddress'] and 'State' in translated['CurrentAddress'] and 'Zip' in translated['CurrentAddress']
+
+def test_bools():
+    assert services.BaseProduct._translate_to_bool(True) == 'Y'
+    assert services.BaseProduct._translate_to_bool(False) == 'N'
+    assert services.BaseProduct._translate_to_bool('y') == 'Y'
+    assert services.BaseProduct._translate_to_bool('Y') == 'Y'
+    assert services.BaseProduct._translate_to_bool('n') == 'N'
+    assert services.BaseProduct._translate_to_bool('true') == 'Y'
+    assert services.BaseProduct._translate_to_bool('false') == 'Y'
