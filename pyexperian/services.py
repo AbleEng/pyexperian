@@ -73,6 +73,9 @@ class BaseProduct():
     # Helper function to simplify looking for a value nested deeply within a dictionary
     @classmethod
     def _get_dict_value(cls, d, key_list):
+        if type(d) not in [dict, list, xmltodict.OrderedDict]:
+            return d
+
         if type(key_list) is not list:
             key_list = [key_list]
 
@@ -248,14 +251,6 @@ class BaseProduct():
             if self._get_dict_value(response_dict, 'ErrorMessage') == 'Invalid request format':
                 raise exceptions.BadRequestException()
 
-            profile_type_code = self._get_dict_value(response_dict, ['Products', self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
-            if profile_type_code:
-                profile_type_code = profile_type_code.strip()
-                if profile_type_code == 'NO RECORD':
-                    return None, response.text
-                # elif profile_type_code == 'LIST':
-
-
 
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
@@ -264,7 +259,7 @@ class BaseProduct():
                 BaseProduct.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return response_dict['Products'][self.product_id], response.text
+        return response_dict['Products'], response.text
 
 
 class BusinessPremierProfile(BaseProduct):
@@ -286,7 +281,13 @@ class BusinessPremierProfile(BaseProduct):
         xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
-        return self._post_xml(xml)
+        resp_dict, resp_xml = self._post_xml(xml)
+
+        profile_type_code = self._get_dict_value(resp_dict, [self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
+        if profile_type_code and profile_type_code.strip() == 'NO RECORD':
+            return None, resp_xml
+
+        return resp_dict, resp_xml
 
 
 class BusinessOwnerProfile(BaseProduct):
