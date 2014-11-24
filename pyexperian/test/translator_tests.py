@@ -1,15 +1,6 @@
 from pyexperian import services
 
 
-def test_business_no_address():
-    business = {'name': 'Franklin BBQ'}
-    translated = services.BaseProduct._translate_business(business)
-    assert 'CurrentAddress' not in translated
-
-    business['address'] = {}
-    translated = services.BaseProduct._translate_business(business)
-    assert 'CurrentAddress' not in translated
-
 def test_address_street():
     address = {'city': 'austin', 'state': 'tx', 'zip': '78701', 'street1': 'first part', 'street2': 'second part'}
     translated = services.BaseProduct._translate_address(address)

@@ -1,9 +1,8 @@
 from pyexperian.lib import dicttoxml
 from pyexperian import constants, exceptions
-import requests
-import xmltodict
-import urllib
 from xml.dom.minidom import parseString
+import requests
+import urllib
 import re
 import time
 import logging
@@ -70,25 +69,6 @@ class BaseProduct():
 
         return 'Y' if bool(val) else 'N'
 
-    # Helper function to simplify looking for a value nested deeply within a dictionary
-    @classmethod
-    def _get_dict_value(cls, d, key_list):
-        if type(d) not in [dict, list, xmltodict.OrderedDict]:
-            return d
-
-        if type(key_list) is not list:
-            key_list = [key_list]
-
-        for key in key_list:
-            if type(key) == str and key in d:
-                d = d[key]
-            elif type(key) == int and len(d) >= key:
-                d = d[key]
-            else:
-                return None
-
-        return d
-
     @classmethod
     def _translate_addons(cls, addons_data={}):
         addons = {}
@@ -137,6 +117,8 @@ class BaseProduct():
 
         if business_data.get('name', None):
             business['BusinessName'] = business_data['name']
+        else:
+            raise exceptions.IncompleteBusinessException('Name is required.')
 
         if business_data.get('alt_name', None):
             business['AlternateName'] = business_data['alt_name']
@@ -148,7 +130,13 @@ class BaseProduct():
             business['Phone'] = {'Number': business_data['phone']}
 
         if business_data.get('address', None):
-            business['CurrentAddress'] = cls._translate_address(business_data['address'])
+            address = cls._translate_address(business_data['address'])
+            if not ('City' in address and 'State' in address and 'Zip' in address):
+                raise exceptions.IncompleteBusinessException('City, State, and Zip are required.')
+
+            business['CurrentAddress'] = address
+        else:
+            raise exceptions.IncompleteBusinessException('Address is required.')
 
         if business_data.get('bis_file_number', None):
             business['BISFileNumber'] = business_data['bis_file_number']
@@ -161,7 +149,6 @@ class BaseProduct():
     @classmethod
     def _translate_owner(cls, owner_data={}):
         business_owner = {}
-
         owner_name = {}
 
         if owner_data.get('first_name', None):
@@ -176,8 +163,10 @@ class BaseProduct():
         if owner_data.get('suffix', None):
             owner_name['Gen'] = owner_data['suffix']
 
-        if owner_name:
+        if owner_name and 'First' in owner_name and 'Surname' in owner_name:
             business_owner['OwnerName'] = owner_name
+        else:
+            raise exceptions.IncompleteOwnerException('First and last name are required.')
 
         if owner_data.get('ssn', None):
             business_owner['SSN'] = owner_data['ssn']
@@ -195,7 +184,14 @@ class BaseProduct():
             business_owner['Title'] = owner_data['title']
 
         if owner_data.get('address', None):
-            business_owner['CurrentAddress'] = cls._translate_address(owner_data['address'])
+            address = cls._translate_address(owner_data['address'])
+
+            if not ('Street' in address and 'City' in address and 'State' in address and 'Zip' in address):
+                raise exceptions.IncompleteOwnerException('Street, City, State, and Zip are required.')
+
+            business_owner['CurrentAddress'] = address
+        else:
+            raise exceptions.IncompleteOwnerException('Address is required.')
 
         driver_license = {}
         if owner_data.get('driver_license_num', None):
@@ -246,12 +242,6 @@ class BaseProduct():
 
             BaseProduct.failed_auth_attempts = 0
 
-            response_dict = xmltodict.parse(response.text)['NetConnectResponse']
-
-            if self._get_dict_value(response_dict, 'ErrorMessage') == 'Invalid request format':
-                raise exceptions.BadRequestException()
-
-
         elif re.search('^<(!DOCTYPE )?html', response.text, re.IGNORECASE):
 
             # TODO using DEMO environment this is the only way to test for bad AUTH.
@@ -259,7 +249,7 @@ class BaseProduct():
                 BaseProduct.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
 
-        return response_dict['Products'], response.text
+        return response.text
 
 
 class BusinessPremierProfile(BaseProduct):
@@ -274,6 +264,8 @@ class BusinessPremierProfile(BaseProduct):
 
         if business:
             request_data['BusinessApplicant'] = self._translate_business(business)
+        else:
+            raise exceptions.IncompleteBusinessException('Business data is required.')
 
         if addons:
             request_data['AddOns'] = self._translate_addons(addons)
@@ -281,13 +273,7 @@ class BusinessPremierProfile(BaseProduct):
         xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
-        resp_dict, resp_xml = self._post_xml(xml)
-
-        profile_type_code = self._get_dict_value(resp_dict, [self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
-        if profile_type_code and profile_type_code.strip() == 'NO RECORD':
-            return None, resp_xml
-
-        return resp_dict, resp_xml
+        return self._post_xml(xml)
 
 
 class BusinessOwnerProfile(BaseProduct):
@@ -313,6 +299,8 @@ class BusinessOwnerProfile(BaseProduct):
 
         if owner:
             request_data['BusinessOwner'] = self._translate_owner(owner)
+        else:
+            raise exceptions.IncompleteOwnerException('Owner data is required.')
 
         if addons:
             request_data['AddOns'] = self._translate_addons(addons)
@@ -320,12 +308,7 @@ class BusinessOwnerProfile(BaseProduct):
         xml = self._to_xml(
             self._wrap_with_header({self.product_id: request_data}))
 
-        resp_dict, resp_xml = self._post_xml(xml)
-
-        if self._get_dict_value(resp_dict, [self.product_id, 'ProcessingMessage', 'ProcessingAction', '@code']) == constants.TERMS_RESPONSE_CODE:
-            raise exceptions.TermsException()
-
-        return resp_dict, resp_xml
+        return self._post_xml(xml)
 
 
 class SBCS(BaseProduct):

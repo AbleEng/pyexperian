@@ -29,3 +29,12 @@ class TermsException(Exception):
     def __init__(self):
         super(TermsException, self).__init__("Re-submit your request if you have consent to request the customer's personal credit.")
 
+
+class IncompleteOwnerException(Exception):
+    def __init__(self, msg):
+        super(IncompleteOwnerException, self).__init__(msg)
+
+
+class IncompleteBusinessException(Exception):
+    def __init__(self, msg):
+        super(IncompleteBusinessException, self).__init__(msg)

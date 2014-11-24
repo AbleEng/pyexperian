@@ -1,5 +1,5 @@
 import xmltodict
-from pyexperian import services, constants
+from pyexperian import services, constants, parsers
 
 xml_data = """
 <CATALOG>
@@ -53,12 +53,12 @@ def test_xmltodict_parsing():
 def test_get_val_helper():
     data = xmltodict.parse(xml_data)
 
-    assert data['CATALOG']['CD'][0]['PRICE'] == services.BaseProduct._get_dict_value(data, ['CATALOG', 'CD', 0, 'PRICE'])
+    assert data['CATALOG']['CD'][0]['PRICE'] == parsers.BaseParser._get_dict_value(data, ['CATALOG', 'CD', 0, 'PRICE'])
 
-    assert services.BaseProduct._get_dict_value(data, ['CATALOG', 'CARLOS']) is None
+    assert parsers.BaseParser._get_dict_value(data, ['CATALOG', 'CARLOS']) is None
 
 
 def test_parse_error_code():
     data = xmltodict.parse("""<?xml version="1.0" standalone="no"?><NetConnectResponse xmlns="http://www.experian.com/NetConnectResponse"><CompletionCode>0000</CompletionCode><ReferenceId>StandAlone BOP</ReferenceId><TransactionId>14996435</TransactionId><Products xmlns="http://www.experian.com/ARFResponse"><BusinessProfile><ProcessingMessage><ProcessingAction code="031">BUSINESS OWNER/SMALL BUSINESS INTELLISCORE TERMS MESSAGE</ProcessingAction></ProcessingMessage></BusinessProfile></Products></NetConnectResponse>""")
 
-    assert services.BaseProduct._get_dict_value(data, ['NetConnectResponse', 'Products', 'BusinessProfile', 'ProcessingMessage', 'ProcessingAction', '@code']) == constants.TERMS_RESPONSE_CODE
+    assert parsers.BaseParser._get_dict_value(data, ['NetConnectResponse', 'Products', 'BusinessProfile', 'ProcessingMessage', 'ProcessingAction', '@code']) == constants.TERMS_RESPONSE_CODE

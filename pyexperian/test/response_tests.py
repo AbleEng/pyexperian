@@ -1,4 +1,4 @@
-from pyexperian import services
+from pyexperian import services, parsers
 
 try:
     from pyexperian.test import secrets
@@ -29,9 +29,13 @@ def test_no_hit_premier_profile():
 
     bpp = services.BusinessPremierProfile(secrets.config, ecals)
 
-    resp_dict, resp_blob = bpp.query(business=business)
+    resp_blob = bpp.query(business=business)
 
-    assert resp_dict is None
+    assert resp_blob is not None
+
+    result = parsers.BusinessPremierProfile(resp_blob)
+
+    assert not result.business_found()
 
 
 def test_direct_hit_premier_profile():
@@ -50,12 +54,12 @@ def test_direct_hit_premier_profile():
         }
     }
 
+    resp_blob = bpp.query(business=business)
 
-    resp_dict, resp_blob = bpp.query(business=business)
+    result = parsers.BusinessPremierProfile(resp_blob)
 
-    assert resp_dict is not None
-    assert 'ListOfSimilars' not in resp_dict[bpp.product_id]
-
+    assert not result.has_list()
+    assert result.business_found()
 
 def test_list_of_similars_premier_profile():
     global bpp
@@ -73,10 +77,11 @@ def test_list_of_similars_premier_profile():
         }
     }
 
-    resp_dict, resp_blob = bpp.query(business=business)
+    resp_blob = bpp.query(business=business)
 
-    assert 'ListOfSimilars' in resp_dict[bpp.product_id]
+    result = parsers.BusinessPremierProfile(resp_blob)
 
+    assert result.has_list()
 
 def test_standalone_business_owner_profile():
     global bop
@@ -106,10 +111,46 @@ def test_standalone_business_owner_profile():
         }
     }
 
-    resp_dict, resp_blob = bop.query(business=business, owner=owner)
+    resp_blob = bop.query(business=business, owner=owner)
 
-    assert resp_dict is not None
+    result = parsers.BusinessOwnerProfile(resp_blob)
 
+    assert result.owner_found()
+
+def test_nohit_standalone_business_owner_profile():
+    global bop
+
+    if not bop:
+        return
+
+    business = {
+        'name': 'Fake Biz',
+        'address': {
+            'street': 'Fake Addy',
+            'city': 'Costa Fake',
+            'state': 'CA',
+            'zip': '78734'
+        }
+    }
+
+    owner = {
+        'first_name': 'Santa',
+        'last_name': 'Jackson',
+        'ssn': '999999999',
+        'address': {
+            'street': 'Fake Addy2',
+            'city': 'Texas',
+            'state': 'CA',
+            'zip': '99911'
+        }
+    }
+
+    resp_blob = bop.query(business=business, owner=owner)
+
+    result = parsers.BusinessOwnerProfile(resp_blob)
+
+    assert not result.business_found()
+    assert not result.owner_found()
 
 def test_no_hit_sbcs():
     global sbcs
@@ -127,11 +168,11 @@ def test_no_hit_sbcs():
         }
     }
 
-    sbcs = services.BusinessPremierProfile(secrets.config, ecals)
+    resp_blob = sbcs.query(business=business)
 
-    resp_dict, resp_blob = sbcs.query(business=business)
+    result = parsers.SBCS(resp_blob)
 
-    assert resp_dict is None
+    assert not result.business_found()
 
 
 def test_direct_hit_sbcs():
@@ -151,10 +192,12 @@ def test_direct_hit_sbcs():
     }
 
 
-    resp_dict, resp_blob = sbcs.query(business=business)
 
-    assert resp_dict is not None
-    assert 'ListOfSimilars' not in resp_dict[sbcs.product_id]
+    resp_blob = sbcs.query(business=business)
+
+    result = parsers.SBCS(resp_blob)
+
+    assert result.business_found()
 
 
 def test_list_of_similars_sbcs():
@@ -173,6 +216,9 @@ def test_list_of_similars_sbcs():
         }
     }
 
-    resp_dict, resp_blob = sbcs.query(business=business)
+    resp_blob = sbcs.query(business=business)
 
-    assert 'ListOfSimilars' in resp_dict[sbcs.product_id]
+    result = parsers.SBCS(resp_blob)
+
+    assert result.has_list()
+
