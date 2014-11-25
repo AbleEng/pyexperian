@@ -13,46 +13,47 @@
         'vendor_number': 'VENDOR_NUMBER', 
         'sub_code': 'SUB_CODE', 
         'db_host': 'DB_HOST'
-    };
+    }
     
     ecals = services.Ecals('ECALS_URL')
     
     bpp = services.BusinessPremierProfile(config, ecals)
     
-    resp_dict, resp_blob = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
+    result = bpp.query(business={'name': 'Franklin Barbecue', 'address': {'street': '900 E 11th St', 'city': 'Austin', 'state': 'TX', 'zip': '78702'}})
     
-    print(resp_blob)
+    print(result)
     
     
 #### Raw XML query
 If you don't want to use the simplified query parameters, you can pass in a pure XML string of the entire NetConnectRequest object.
 
-    bp = services.BaseProduct(config, ecals)
-    resp_dict, resp_blob = bp.raw_query("""
+    raw = services.Raw(config, ecals)
+    
+    result = raw.query("""
         <?xml version="1.0" encoding="UTF-8"?>
         <NetConnectRequest>
         ...
         </NetConnectRequest>
     """)
     
-    print(resp_blob)
+    print(result)
 
 ## Services
 
 #### Business Premier Profile
 
     bpp = services.BusinessPremierProfile(config, ecals)
-    resp = bpp.query(business={..., address={...}})
+    result = bpp.query(business={..., address={...}})
 
 #### SBCS
 
     sbcs = services.SBCS(config, ecals)
-    resp = sbcs.query(business={..., address={...}})
+    result = sbcs.query(business={..., address={...}})
     
 #### Business Owner Profile
 
     bop = services.BusinessOwnerProfile(config, ecals)
-    resp = bop.query(business={..., address={...}}, owner={..., address={}})
+    result = bop.query(business={..., address={...}}, owner={..., address={}})
     
 
 ## Attributes
@@ -65,3 +66,26 @@ If you don't want to use the simplified query parameters, you can pass in a pure
     
     services.enable_debug()
     
+## Parsers
+
+**This is where most help is needed**
+
+There are basic parsers for each product to help spit out simple answers.
+
+    from pyexperian import services, parsers    
+    
+    ...
+    
+    bop = services.BusinessOwnerProfile(config, ecals)
+    result = bop.query(business={..., address={...}}, owner={..., address={}})
+    
+    parsed_result = parsers.BusinessOwnerProfile(result)
+   
+    # Whether response shows a business match
+    print(parsed_result.business_found())
+   
+    # Whether response shows an owner match
+    print(parsed_result.owner_found())
+   
+    # Whether list of similars were returned.
+    print(parsed_result.has_list())
