@@ -21,8 +21,8 @@ class FailedAuthException(Exception):
 
 
 class BadRequestException(Exception):
-    def __init__(self):
-        super(BadRequestException, self).__init__("Check your config and query data for bad or missing values.")
+    def __init__(self, msg=''):
+        super(BadRequestException, self).__init__(msg or "Check your config and query data for bad or missing values.")
 
 
 class TermsException(Exception):

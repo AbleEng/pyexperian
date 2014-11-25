@@ -33,7 +33,15 @@ class BaseParser():
         self.xml = xml
 
         d = xmltodict.parse(xml)
-        self.dict = d['NetConnectResponse']['Products']
+        self.dict = d['NetConnectResponse']
+
+        # Check for 'Bad Request' error
+        error_message = self._get_dict_value(self.dict, ['ErrorMessage'])
+        if error_message:
+            error_tag = self._get_dict_value(self.dict, ['ErrorTag'])
+            raise exceptions.BadRequestException('Message: %s, Tag: %s' % (error_message, error_tag))
+
+        self.dict = self.dict['Products']
 
 
 class BusinessOwnerProfile(BaseParser):

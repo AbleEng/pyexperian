@@ -1,4 +1,5 @@
-from pyexperian import services, parsers
+from pyexperian import services, parsers, exceptions
+from nose.tools import raises
 
 try:
     from pyexperian.test import secrets
@@ -273,3 +274,51 @@ def test_raw_query():
     result = raw.query(xml)
 
     assert result.index('NetConnectResponse') >= 0
+
+@raises(exceptions.BadRequestException)
+def test_bad_request_query():
+    global raw
+
+    if not raw:
+        return
+
+    xml = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <NetConnectRequest>
+        <EAI>%(eai)s</EAI>
+        <DBHost>%(db_host)s</DBHost>
+        <Request xmlns="http://www.experian.com/WebDelivery" version="1.0">
+            <Products>
+                <PremierProfile>
+                    <Subscriber>
+                        <OpInitials>OP</OpInitials>
+                        <SubCode>%(sub_code)s</SubCode>
+                    </Subscriber>
+                    <BusinessApplicant>
+                        <BusinessName>EXPERIAN INFORMATION SOLUTIONS</BusinessName>
+                        <CurrentAddress>
+                            <Zip>92626</Zip>
+                        </CurrentAddress>
+                    </BusinessApplicant>
+                    <OutputType>
+                        <XML>
+                            <Verbose>Y</Verbose>
+                        </XML>
+                    </OutputType>
+                    <Vendor>
+                        <VendorNumber>$(vendor_number)s</VendorNumber>
+                    </Vendor>
+                </PremierProfile>
+            </Products>
+        </Request>
+    </NetConnectRequest>
+    """ % {
+            'eai': secrets.EAI,
+            'db_host': secrets.DB_HOST,
+            'sub_code': secrets.SUB_CODE,
+            'vendor_number': secrets.VENDOR_NUMBER
+        }
+
+    result = raw.query(xml)
+
+    parsed_result = parsers.BusinessPremierProfile(result)
