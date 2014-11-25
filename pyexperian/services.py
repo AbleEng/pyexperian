@@ -54,10 +54,6 @@ class BaseProduct():
             }
         }
 
-    # Pass in the entire NetConnectRequest XML
-    def raw_query(self, xml):
-        return self._post_xml(xml)
-
 
     # Translates value to 'Y' or 'N'
     @classmethod
@@ -342,6 +338,13 @@ class SBCS(BaseProduct):
         return self._post_xml(xml)
 
 
+# Pass in the entire NetConnectRequest XML
+class Raw(BaseProduct):
+
+    def query(self, xml):
+        return self._post_xml(xml.strip())
+
+
 class Ecals():
 
     def __init__(self, ecals_url):
@@ -379,3 +382,4 @@ class Ecals():
     def get_hostname_from_url(cls, url):
         match = re.search(r'^https?://([^/]+).*$', url)
         return match.group(1) if match else None
+

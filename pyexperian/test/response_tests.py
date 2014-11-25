@@ -3,12 +3,13 @@ from pyexperian import services, parsers
 try:
     from pyexperian.test import secrets
 
-    ecals = services.Ecals(secrets.EXPERIAN_ECALS_URL)
+    ecals = services.Ecals(secrets.ECALS_URL)
     bpp = services.BusinessPremierProfile(secrets.config, ecals)
     sbcs = services.SBCS(secrets.config, ecals)
     bop = services.BusinessOwnerProfile(secrets.config, ecals)
+    raw = services.Raw(secrets.config, ecals)
 except ImportError as e:
-    ecals = bpp = sbcs = bop = None
+    ecals = bpp = sbcs = bop = raw = None
 
 
 def test_no_hit_premier_profile():
@@ -222,3 +223,53 @@ def test_list_of_similars_sbcs():
 
     assert result.has_list()
 
+
+def test_raw_query():
+    global raw
+
+    if not raw:
+        return
+
+    xml = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <NetConnectRequest>
+        <EAI>%(eai)s</EAI>
+        <DBHost>%(db_host)s</DBHost>
+        <Request xmlns="http://www.experian.com/WebDelivery" version="1.0">
+            <Products>
+                <PremierProfile>
+                    <Subscriber>
+                        <OpInitials>OP</OpInitials>
+                        <SubCode>%(sub_code)s</SubCode>
+                    </Subscriber>
+                    <BusinessApplicant>
+                        <BusinessName>EXPERIAN INFORMATION SOLUTIONS</BusinessName>
+                        <CurrentAddress>
+                            <Street>475 ANTON BLVD</Street>
+                            <City>COSTA MESA</City>
+                            <State>CA</State>
+                            <Zip>92626</Zip>
+                        </CurrentAddress>
+                    </BusinessApplicant>
+                    <OutputType>
+                        <XML>
+                            <Verbose>Y</Verbose>
+                        </XML>
+                    </OutputType>
+                    <Vendor>
+                        <VendorNumber>$(vendor_number)s</VendorNumber>
+                    </Vendor>
+                </PremierProfile>
+            </Products>
+        </Request>
+    </NetConnectRequest>
+    """ % {
+            'eai': secrets.EAI,
+            'db_host': secrets.DB_HOST,
+            'sub_code': secrets.SUB_CODE,
+            'vendor_number': secrets.VENDOR_NUMBER
+        }
+
+    result = raw.query(xml)
+
+    assert result.index('NetConnectResponse') >= 0

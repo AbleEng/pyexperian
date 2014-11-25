@@ -4,7 +4,7 @@ from nose.tools import raises
 try:
     from pyexperian.test import secrets
 
-    ecals = services.Ecals(secrets.EXPERIAN_ECALS_URL)
+    ecals = services.Ecals(secrets.ECALS_URL)
     bpp = services.BusinessPremierProfile(secrets.config, ecals)
     sbcs = services.SBCS(secrets.config, ecals)
     bop = services.BusinessOwnerProfile(secrets.config, ecals)
