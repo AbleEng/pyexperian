@@ -60,6 +60,19 @@ class BusinessPremierProfile(BaseParser):
     product_id = constants.BUSINESS_PREMIER_PROFILE_ID
 
 
+    def get_name(self):
+        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'BusinessName'])
+
+    def get_tax_id(self):
+        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'TaxID'])
+
+
+    def get_phone(self):
+        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'PhoneNumber'])
+
+    def get_bin(self):
+        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'ExperianBIN'])
+
 class SBCS(BaseParser):
     product_id = constants.SBCS_ID
 

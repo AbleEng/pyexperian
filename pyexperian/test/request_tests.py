@@ -137,6 +137,15 @@ def test_complete_owner():
     if not bop:
         return
 
+    business = {
+        'name': 'Experian Information Solutiosn',
+        'address': {
+            'city': 'Costa Mesa',
+            'state': 'CA',
+            'zip': '92626'
+        }
+    }
+
     owner = {
         'first_name': 'Derrick',
         'last_name': 'Benson',
@@ -148,7 +157,7 @@ def test_complete_owner():
         }
     }
 
-    resp = bop.query(owner=owner)
+    resp = bop.query(business=business, owner=owner)
 
 
     assert resp is not None

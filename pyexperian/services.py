@@ -290,13 +290,15 @@ class BusinessOwnerProfile(BaseProduct):
 
         request_data.update(defaults)
 
-        if business:
-            request_data['BusinessApplicant'] = self._translate_business(business)
-
         if owner:
             request_data['BusinessOwner'] = self._translate_owner(owner)
         else:
             raise exceptions.IncompleteOwnerException('Owner data is required.')
+
+        if business:
+            request_data['BusinessApplicant'] = self._translate_business(business)
+        else:
+            raise exceptions.IncompleteBusinessException('Business data is required.')
 
         if addons:
             request_data['AddOns'] = self._translate_addons(addons)

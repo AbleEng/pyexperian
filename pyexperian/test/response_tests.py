@@ -62,6 +62,10 @@ def test_direct_hit_premier_profile():
 
     assert not result.has_list()
     assert result.business_found()
+    assert result.get_name() == 'EXPERIAN INFORMATION SOLUTIONS, INC'
+    assert result.get_phone() == '714-830-7000'
+    assert result.get_tax_id() == '131134319'
+    assert result.get_bin() == '796744203'
 
 def test_list_of_similars_premier_profile():
     global bpp
