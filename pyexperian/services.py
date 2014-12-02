@@ -123,7 +123,7 @@ class BaseProduct():
             business['TaxId'] = business_data['tax_id']
 
         if business_data.get('phone', None):
-            business['Phone'] = {'Number': business_data['phone']}
+            business['Phone'] = {'Number': re.sub(r'\D', '', business_data['phone'])}
 
         if business_data.get('address', None):
             address = cls._translate_address(business_data['address'])

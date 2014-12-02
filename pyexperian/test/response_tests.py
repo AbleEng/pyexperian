@@ -131,6 +131,7 @@ def test_nohit_standalone_business_owner_profile():
 
     business = {
         'name': 'Fake Biz',
+        'phone': '999-555-1234',
         'address': {
             'street': 'Fake Addy',
             'city': 'Costa Fake',
