@@ -76,16 +76,19 @@ There are basic parsers for each product to help spit out simple answers.
     
     ...
     
-    bop = services.BusinessOwnerProfile(config, ecals)
-    result = bop.query(business={..., address={...}}, owner={..., address={}})
+    bop = services.BusinessPremierProfile(config, ecals)
+    result = bpp.query(business={..., address={...}})
     
-    parsed_result = parsers.BusinessOwnerProfile(result)
+    parsed_result = parsers.BusinessPremierProfile(result)
    
     # Whether response shows a business match
     print(parsed_result.business_found())
    
-    # Whether response shows an owner match
-    print(parsed_result.owner_found())
-   
     # Whether list of similars were returned.
-    print(parsed_result.has_list())
+    if parsed_result.has_list():
+        similars = parsed_result.get_list()
+        
+        # Re-query using one of the similars
+        business = {'bis_file_number': similars[0]['bis_file_number']}
+        
+        result = bpp.query(business=business)

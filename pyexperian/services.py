@@ -110,10 +110,15 @@ class BaseProduct():
     @classmethod
     def _translate_business(cls, business_data={}):
         business = {}
+        has_bis = False
+
+        if business_data.get('bis_file_number', None):
+            has_bis = True
+            business['BISFileNumber'] = business_data['bis_file_number']
 
         if business_data.get('name', None):
             business['BusinessName'] = business_data['name']
-        else:
+        elif not has_bis:
             raise exceptions.IncompleteBusinessException('Name is required.')
 
         if business_data.get('alt_name', None):
@@ -131,11 +136,8 @@ class BaseProduct():
                 raise exceptions.IncompleteBusinessException('City, State, and Zip are required.')
 
             business['CurrentAddress'] = address
-        else:
+        elif not has_bis:
             raise exceptions.IncompleteBusinessException('Address is required.')
-
-        if business_data.get('bis_file_number', None):
-            business['BISFileNumber'] = business_data['bis_file_number']
 
         if business_data.get('bis_list_number', None):
             business['BISListNumber'] = business_data['bis_list_number']

@@ -60,12 +60,31 @@ class BusinessPremierProfile(BaseParser):
     product_id = constants.BUSINESS_PREMIER_PROFILE_ID
 
 
+    def _similar_to_dict(self, similar):
+        return {
+            'bis_file_number': similar['ExperianFileNumber'],
+            'name': similar['BusinessName'],
+            'address': {
+                'city': similar['City'],
+                'state': similar['State'],
+                'zip': similar['Zip'],
+                'street': similar['StreetAddress']
+            }
+        }
+
     def get_name(self):
         return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'BusinessName'])
 
     def get_tax_id(self):
         return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'TaxID'])
 
+    def get_list(self):
+        similars = self._get_dict_value(self.dict, [self.product_id, 'ListOfSimilars'])
+
+        if type(similars) is not list:
+            similars = [similars]
+
+        return map(self._similar_to_dict, similars)
 
     def get_phone(self):
         return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'PhoneNumber'])

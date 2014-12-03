@@ -74,6 +74,27 @@ def test_list_of_similars_premier_profile():
         return
 
     business = {
+        'name': 'Experian',
+        'address': {
+            'street': '123 Main Street',
+            'city': 'Costa Mesa',
+            'state': 'CA',
+            'zip': '92626'
+        }
+    }
+
+    resp_blob = bpp.query(business=business)
+
+    result = parsers.BusinessPremierProfile(resp_blob)
+
+    assert result.has_list()
+
+    similars = result.get_list()
+
+    assert len(similars) > 1
+
+
+    business = {
         'name': 'Experian Information Solutions',
         'address': {
             'street': '123 Main Street',
@@ -88,6 +109,26 @@ def test_list_of_similars_premier_profile():
     result = parsers.BusinessPremierProfile(resp_blob)
 
     assert result.has_list()
+    similars = result.get_list()
+    similar = similars[0]
+
+    assert len(similars) == 1
+    assert 'bis_file_number' in similar
+    assert 'name' in similar
+    assert 'address' in similar
+
+    business = {
+        'bis_file_number': similar['bis_file_number']
+    }
+
+    resp_blob = bpp.query(business=business)
+
+    result = parsers.BusinessPremierProfile(resp_blob)
+
+    assert result.business_found()
+
+    assert result.get_name() == similar['name']
+
 
 def test_standalone_business_owner_profile():
     global bop
