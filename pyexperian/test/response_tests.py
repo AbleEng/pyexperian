@@ -62,10 +62,10 @@ def test_direct_hit_premier_profile():
 
     assert not result.has_list()
     assert result.business_found()
-    assert result.get_name() == 'EXPERIAN INFORMATION SOLUTIONS, INC'
-    assert result.get_phone() == '714-830-7000'
-    assert result.get_tax_id() == '131134319'
-    assert result.get_bin() == '796744203'
+    business_info = result.get_business()
+    assert 'experian_bin' in business_info
+    assert 'phone' in business_info
+    assert 'address' in business_info
 
 def test_list_of_similars_premier_profile():
     global bpp
@@ -113,12 +113,12 @@ def test_list_of_similars_premier_profile():
     similar = similars[0]
 
     assert len(similars) == 1
-    assert 'bis_file_number' in similar
+    assert 'experian_bin' in similar
     assert 'name' in similar
     assert 'address' in similar
 
     business = {
-        'bis_file_number': similar['bis_file_number']
+        'experian_bin': similar['experian_bin']
     }
 
     resp_blob = bpp.query(business=business)
@@ -126,8 +126,9 @@ def test_list_of_similars_premier_profile():
     result = parsers.BusinessPremierProfile(resp_blob)
 
     assert result.business_found()
+    business = result.get_business()
 
-    assert result.get_name() == similar['name']
+    assert business['name'] == similar['name']
 
 
 def test_standalone_business_owner_profile():

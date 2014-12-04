@@ -56,13 +56,13 @@ class BusinessOwnerProfile(BaseParser):
     def owner_found(self):
         return None is not self._get_dict_value(self.dict, ['CreditProfile', 'ProfileSummary'])
 
+
 class BusinessPremierProfile(BaseParser):
     product_id = constants.BUSINESS_PREMIER_PROFILE_ID
 
-
     def _similar_to_dict(self, similar):
         return {
-            'bis_file_number': similar['ExperianFileNumber'],
+            'experian_bin': similar['ExperianFileNumber'],
             'name': similar['BusinessName'],
             'address': {
                 'city': similar['City'],
@@ -72,11 +72,23 @@ class BusinessPremierProfile(BaseParser):
             }
         }
 
-    def get_name(self):
-        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'BusinessName'])
+    def get_business(self):
+        business_info = self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress'])
+        if business_info:
+            return {
+                'name': business_info['BusinessName'],
+                'experian_bin': business_info['ExperianBIN'],
+                'phone': business_info['PhoneNumber'],
+                'address': {
+                    'city': business_info['City'],
+                    'state': business_info['State'],
+                    'zip': business_info['Zip'],
+                    'street': business_info['StreetAddress']
+                }
+            }
 
-    def get_tax_id(self):
-        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'TaxID'])
+        return None
+
 
     def get_list(self):
         similars = self._get_dict_value(self.dict, [self.product_id, 'ListOfSimilars'])
@@ -86,11 +98,6 @@ class BusinessPremierProfile(BaseParser):
 
         return map(self._similar_to_dict, similars)
 
-    def get_phone(self):
-        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'PhoneNumber'])
-
-    def get_bin(self):
-        return self._get_dict_value(self.dict, [self.product_id, 'ExpandedBusinessNameAndAddress', 'ExperianBIN'])
 
 class SBCS(BaseParser):
     product_id = constants.SBCS_ID

@@ -89,6 +89,6 @@ There are basic parsers for each product to help spit out simple answers.
         similars = parsed_result.get_list()
         
         # Re-query using one of the similars
-        business = {'bis_file_number': similars[0]['bis_file_number']}
+        business = {'experian_bin': similars[0]['experian_bin']}
         
         result = bpp.query(business=business)
