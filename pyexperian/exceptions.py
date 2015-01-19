@@ -20,6 +20,11 @@ class FailedAuthException(Exception):
         super(FailedAuthException, self).__init__("Bad credentials.  Did you remember to reset your password?")
 
 
+class PasswordExpiredException(Exception):
+    def __init__(self):
+        super(PasswordExpiredException, self).__init__("Your password is expired.")
+
+
 class BadRequestException(Exception):
     def __init__(self, msg=''):
         super(BadRequestException, self).__init__(msg or "Check your config and query data for bad or missing values.")

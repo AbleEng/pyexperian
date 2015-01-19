@@ -65,6 +65,10 @@ If you don't want to use the simplified query parameters, you can pass in a pure
     from pyexperian import services
     
     services.enable_debug()
+   
+## Tests
+
+    nosetests
     
 ## Parsers
 

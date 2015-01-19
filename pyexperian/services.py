@@ -250,6 +250,8 @@ class BaseProduct():
             if re.search('app\.logonUrl', response.text):
                 BaseProduct.failed_auth_attempts += 1
                 raise exceptions.FailedAuthException()
+            elif re.search('changepw', response.text):
+                raise exceptions.PasswordExpiredException()
 
         return response.text
 
