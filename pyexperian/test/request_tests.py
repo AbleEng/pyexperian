@@ -75,6 +75,27 @@ def test_complete_business_address():
     assert resp is not None
 
 
+def test_complete_business_address_sbcs():
+    global sbcs
+
+    if not sbcs:
+        return
+
+    business = {
+        'name': 'Experian Information Solutiosn',
+        'address': {
+            'city': 'Costa Mesa',
+            'state': 'CA',
+            'zip': '92626'
+        }
+    }
+
+    resp = sbcs.query(business=business)
+
+
+    assert resp is not None
+
+
 
 @raises(exceptions.IncompleteOwnerException)
 def test_empty_owner():
