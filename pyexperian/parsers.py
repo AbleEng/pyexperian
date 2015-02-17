@@ -25,6 +25,9 @@ class BaseParser():
     def has_list(self):
         return 'ListOfSimilars' in self.dict[self.product_id]
 
+    def extract(self, xml_path):
+        return self._get_dict_value(self.dict, xml_path)
+
     def business_found(self):
         profile_type_code = self._get_dict_value(self.dict, [self.product_id, 'BusinessNameAndAddress', 'ProfileType', '@code'])
         return not self.has_list() and (not profile_type_code or profile_type_code.strip() != 'NO RECORD')
@@ -88,7 +91,6 @@ class BusinessPremierProfile(BaseParser):
             }
 
         return None
-
 
     def get_list(self):
         similars = self._get_dict_value(self.dict, [self.product_id, 'ListOfSimilars'])

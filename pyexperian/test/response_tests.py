@@ -165,6 +165,74 @@ def test_standalone_business_owner_profile():
 
     assert result.owner_found()
 
+
+def test_extractor_match():
+    global bop
+
+    if not bop:
+        return
+
+    business = {
+        'name': 'Experian Information Solutions',
+        'address': {
+            'street': '475 Anton Blvd',
+            'city': 'Costa Mesa',
+            'state': 'CA',
+            'zip': '92626'
+        }
+    }
+
+    owner = {
+        'first_name': 'Derrick',
+        'last_name': 'Benson',
+        'ssn': '887487109',
+        'address': {
+            'street': '7600 Trumbower Trl',
+            'city': 'Millington',
+            'state': 'MI',
+            'zip': '48746'
+        }
+    }
+
+    resp_blob = bop.query(business=business, owner=owner)
+
+    result = parsers.BusinessOwnerProfile(resp_blob)
+    assert result.extract(['CreditProfile', 'RiskModel', 'Score']) == '0855'
+
+
+def test_extractor_no_match():
+    global bop
+
+    if not bop:
+        return
+
+    business = {
+        'name': 'Experian Information Solutions',
+        'address': {
+            'street': '475 Anton Blvd',
+            'city': 'Costa Mesa',
+            'state': 'CA',
+            'zip': '92626'
+        }
+    }
+
+    owner = {
+        'first_name': 'Derrick',
+        'last_name': 'Benson',
+        'ssn': '887487109',
+        'address': {
+            'street': '7600 Trumbower Trl',
+            'city': 'Millington',
+            'state': 'MI',
+            'zip': '48746'
+        }
+    }
+
+    resp_blob = bop.query(business=business, owner=owner)
+
+    result = parsers.BusinessOwnerProfile(resp_blob)
+    assert result.extract(['Fake', 'Path', 'Score']) is None
+
 def test_nohit_standalone_business_owner_profile():
     global bop
 
