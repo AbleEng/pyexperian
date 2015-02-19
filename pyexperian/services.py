@@ -128,8 +128,8 @@ class BaseProduct():
         if business_data.get('alt_name', None):
             business['AlternateName'] = business_data['alt_name']
 
-        if business_data.get('tax_id', None):
-            business['TaxId'] = business_data['tax_id']
+        if business_data.get('ein', None):
+            business['TaxId'] = business_data['ein']
 
         if business_data.get('phone', None):
             business['Phone'] = {'Number': re.sub(r'\D', '', business_data['phone'])}
