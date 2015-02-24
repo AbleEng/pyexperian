@@ -66,6 +66,7 @@ def test_direct_hit_premier_profile():
     assert 'experian_bin' in business_info
     assert 'phone' in business_info
     assert 'address' in business_info
+    assert 'ein' in business_info
 
 def test_list_of_similars_premier_profile():
     global bpp
@@ -124,7 +125,6 @@ def test_list_of_similars_premier_profile():
     resp_blob = bpp.query(business=business)
 
     result = parsers.BusinessPremierProfile(resp_blob)
-
     assert result.business_found()
     business = result.get_business()
 
@@ -164,6 +164,9 @@ def test_standalone_business_owner_profile():
     result = parsers.BusinessOwnerProfile(resp_blob)
 
     assert result.owner_found()
+    extracted_owner = result.get_owner()
+    assert owner['address']['city'].strip().lower() == extracted_owner['address']['city'].strip().lower()
+
 
 
 def test_extractor_match():
@@ -338,6 +341,27 @@ def test_list_of_similars_sbcs():
     result = parsers.SBCS(resp_blob)
 
     assert result.has_list()
+
+    similars = result.get_list()
+    similar = similars[0]
+
+    assert len(similars) == 1
+    assert 'experian_bin' in similar
+    assert 'name' in similar
+    assert 'address' in similar
+
+    business = {
+        'experian_bin': similar['experian_bin']
+    }
+
+    resp_blob = sbcs.query(business=business)
+
+    result = parsers.SBCS(resp_blob)
+
+    assert result.business_found()
+    business = result.get_business()
+
+    assert business['name'] == similar['name']
 
 
 def test_raw_query():
