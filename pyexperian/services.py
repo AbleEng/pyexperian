@@ -6,7 +6,28 @@ import urllib
 import re
 import time
 import logging
+import ssl
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
+
+class ForceTLSV1Adapter(HTTPAdapter):
+    """"Transport adapter" that allows us to use TLSv1"""
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=ssl.PROTOCOL_TLSv1)
+
+_session = None
+def get_session():
+    global _session
+    if not _session:
+        _session = requests.Session()
+        _session.mount('https://', ForceTLSV1Adapter())
+
+    return _session
 
 def enable_debug(filename='pyexperian.log'):
     import datetime
@@ -235,7 +256,7 @@ class BaseProduct():
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = (self.config['user_id'], self.config['user_pw'])
 
-        response = requests.post(url, headers=headers, auth=auth, data=data)
+        response = get_session().post(url, headers=headers, auth=auth, data=data)
 
         logging.info(response.text)
 
@@ -372,7 +393,7 @@ class Ecals():
 
     def _fetch_net_connect_url(self):
         logging.info("Fetching new Net Connect URL from ECALS.")
-        response = requests.get(self.ecals_url)
+        response = get_session().get(self.ecals_url)
         if response.status_code == constants.HTTP_STATUS_OK:
             net_connect_url = response.text
             if Ecals.is_valid_net_connect_url(net_connect_url):

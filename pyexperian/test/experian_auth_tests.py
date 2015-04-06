@@ -39,7 +39,7 @@ def test_auth_case_2():
     try:
         bpp.query(business={'name': 'norecordco', 'address':{'street': '123 main street', 'city': 'buena park', 'state': 'CA', 'zip': '90620'}})
     except requests.exceptions.SSLError as e:
-        assert re.search("hostname .* doesn't match", str(e)) is not None
+        assert re.search('certificate verify failed', str(e)) is not None
 
 
 @with_setup(setup, teardown)

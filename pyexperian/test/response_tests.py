@@ -269,7 +269,6 @@ def test_nohit_standalone_business_owner_profile():
 
     result = parsers.BusinessOwnerProfile(resp_blob)
 
-    assert not result.business_found()
     assert not result.owner_found()
 
 def test_no_hit_sbcs():
