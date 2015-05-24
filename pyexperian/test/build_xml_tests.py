@@ -1,4 +1,4 @@
-from pyexperian.lib import dicttoxml
+from pyexperian import services
 
 
 def _uglify_xml(xml_output):
@@ -28,11 +28,11 @@ def test_xml_request_building():
         }
     }
 
-    xml_out = dicttoxml.dicttoxml(d, attr_type=False, custom_root='NetConnectRequest xmlns="http://www.experian.com/NetConnect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.experian.com/NetConnect NetConnect.xsd"')
+    xml_out = services.dict_to_xml(d, root='NetConnectRequest')
 
     assert xml_out == _uglify_xml("""
 <?xml version="1.0" encoding="UTF-8" ?>
-<NetConnectRequest xmlns="http://www.experian.com/NetConnect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.experian.com/NetConnect NetConnect.xsd">
+<NetConnectRequest>
     <EAI>11111111</EAI>
     <DBHost>BISPROD</DBHost>
     <ReferenceId>user1abc001</ReferenceId>

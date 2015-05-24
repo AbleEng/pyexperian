@@ -1,54 +1,10 @@
 from pyexperian.lib import dicttoxml
-from pyexperian import constants, exceptions
+from pyexperian import constants, exceptions, session
 from xml.dom.minidom import parseString
-import requests
 import urllib
 import re
 import time
 import logging
-import ssl
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-
-
-# Experian requires TLS over SSL
-class ForceTLSV1Adapter(HTTPAdapter):
-    """"Transport adapter" that allows us to use TLSv1"""
-
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       ssl_version=ssl.PROTOCOL_TLSv1)
-
-_session = None
-def get_session():
-    global _session
-    if not _session:
-        _session = requests.Session()
-        _session.mount('https://', ForceTLSV1Adapter())
-
-    return _session
-
-def enable_debug(filename='pyexperian.log'):
-    import datetime
-    print('Debug mode is on. Events are logged at: %s' % filename)
-    logging.basicConfig(filename=filename, level=logging.INFO)
-    logging.info('\nLogging session starts: %s' % (str(datetime.datetime.today())))
-
-
-def disable_debug():
-    logging.basicConfig(level=logging.WARNING)
-    print('Debug mode is off.')
-
-
-def dict_to_xml(data_dict={}):
-    return dicttoxml.dicttoxml(data_dict, attr_type=False, custom_root='NetConnectRequest')
-
-def log_pretty_xml(xml, header=None):
-    header = "\n======%s======\n" % header.upper() if header else "\n"
-    #logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
-    print("%s%s" % (header, parseString(xml).toprettyxml()))
 
 
 class NetConnect():
@@ -57,6 +13,13 @@ class NetConnect():
     def __init__(self, config):
         self.config = config
         self.ecals = Ecals(self.config['ecals_url'])
+
+    def query(self, product_id, query_data):
+        request_data = self._get_base_request_data()
+        request_data.update(query_data)
+
+        return self._post_xml(_dict_to_xml(
+            self._wrap_request_with_header({product_id: request_data}), 'NetConnectRequest'))
 
     def _wrap_request_with_header(self, product_data):
         return {
@@ -84,7 +47,6 @@ class NetConnect():
             }
         }
 
-
     def _post_xml(self, xml):
         # Lock them out if too many bad auth attempts
         if NetConnect.failed_auth_attempts >= constants.MAX_AUTH_ATTEMPTS:
@@ -92,7 +54,7 @@ class NetConnect():
 
         url = self.ecals.get_net_connect_url()
 
-        log_pretty_xml(xml, 'request')
+        _log_pretty_xml(xml, 'request')
 
         logging.info("Net Connect URL: %s" % url)
 
@@ -100,12 +62,12 @@ class NetConnect():
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = (self.config['user_id'], self.config['user_pw'])
 
-        response = get_session().post(url, headers=headers, auth=auth, data=data)
+        response = session.get_session().post(url, headers=headers, auth=auth, data=data)
 
         logging.info(response.text)
 
         if re.search('^<\?xml', response.text, re.IGNORECASE):
-            log_pretty_xml(response.text, 'response')
+            _log_pretty_xml(response.text, 'response')
 
             NetConnect.failed_auth_attempts = 0
 
@@ -121,45 +83,11 @@ class NetConnect():
         return response.text
 
 
-    def query(self, product_id, query_data):
-        request_data = self._get_base_request_data()
-        request_data.update(query_data)
-
-        return self._post_xml(
-                dict_to_xml(
-                    self._wrap_request_with_header({product_id: request_data})))
-
-
-class TimedUrl():
-    def __init__(self, url, seconds_til_expired):
-        self.url = url
-        self.start_time = time.time()
-        self.seconds_til_expired = seconds_til_expired
-
-    def is_expired(self):
-        return (time.time() - self.start_time) >= self.seconds_til_expired
-
-    def reset(self, url=None):
-        self.url = url or self.url
-        self.start_time = time.time()
-
-
 class Ecals():
+    net_connect_url = None
+
     def __init__(self, ecals_url):
         self.ecals_url = ecals_url
-        self.net_connect_url = None
-
-    def _fetch_net_connect_url(self):
-        logging.info("Fetching new Net Connect URL from ECALS.")
-        response = get_session().get(self.ecals_url)
-        if response.status_code == constants.HTTP_STATUS_OK:
-            net_connect_url = response.text
-            if Ecals.is_valid_net_connect_url(net_connect_url):
-                return net_connect_url
-            else:
-                raise exceptions.InvalidNetConnectUrlException()
-        else:
-            raise exceptions.EcalsLookupException()
 
     def get_net_connect_url(self):
         if not self.net_connect_url:
@@ -169,6 +97,18 @@ class Ecals():
             self.net_connect_url.reset(self._fetch_net_connect_url())
 
         return self.net_connect_url.url
+
+    def _fetch_net_connect_url(self):
+        logging.info("Fetching new Net Connect URL from ECALS.")
+        response = session.get_session().get(self.ecals_url)
+        if response.status_code == constants.HTTP_STATUS_OK:
+            net_connect_url = response.text
+            if Ecals.is_valid_net_connect_url(net_connect_url):
+                return net_connect_url
+            else:
+                raise exceptions.InvalidNetConnectUrlException()
+        else:
+            raise exceptions.EcalsLookupException()
 
     @staticmethod
     def is_valid_net_connect_url(url):
@@ -181,5 +121,27 @@ class Ecals():
         match = re.search(r'^https?://([^/]+).*$', url)
         return match.group(1) if match else None
 
+    class TimedUrl():
+        def __init__(self, url, seconds_til_expired):
+            self.url = url
+            self.start_time = time.time()
+            self.seconds_til_expired = seconds_til_expired
+
+        def is_expired(self):
+            return (time.time() - self.start_time) >= self.seconds_til_expired
+
+        def reset(self, url=None):
+            self.url = url or self.url
+            self.start_time = time.time()
+
+
+def _dict_to_xml(data_dict, root=None)
+    return dicttoxml.dicttoxml(data_dict, attr_type=False, custom_root=root)
+
+
+def _log_pretty_xml(xml, header=None):
+    header = "\n======%s======\n" % header.upper() if header else "\n"
+    #logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
+    print("%s%s" % (header, parseString(xml).toprettyxml()))
 
 
