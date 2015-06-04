@@ -91,7 +91,7 @@ class Ecals():
 
     def get_net_connect_url(self):
         if not self.net_connect_url:
-            self.net_connect_url = TimedUrl(self._fetch_net_connect_url(), constants.URL_EXPIRATION_IN_SECONDS)
+            self.net_connect_url = Ecals.TimedUrl(self._fetch_net_connect_url(), constants.URL_EXPIRATION_IN_SECONDS)
         elif self.net_connect_url.is_expired():
             logging.info("Existing Net Connect URL is expired")
             self.net_connect_url.reset(self._fetch_net_connect_url())
@@ -135,7 +135,7 @@ class Ecals():
             self.start_time = time.time()
 
 
-def _dict_to_xml(data_dict, root=None)
+def _dict_to_xml(data_dict, root=None):
     return dicttoxml.dicttoxml(data_dict, attr_type=False, custom_root=root)
 
 
