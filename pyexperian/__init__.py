@@ -1,5 +1,5 @@
 import logging
-__version__ = '0.13.5'
+__version__ = '1.0'
 
 
 def enable_debug(filename='pyexperian.log'):
