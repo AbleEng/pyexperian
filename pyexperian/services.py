@@ -141,7 +141,6 @@ def _dict_to_xml(data_dict, root=None):
 
 def _log_pretty_xml(xml, header=None):
     header = "\n======%s======\n" % header.upper() if header else "\n"
-    #logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
-    print("%s%s" % (header, parseString(xml).toprettyxml()))
+    logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
 
 
