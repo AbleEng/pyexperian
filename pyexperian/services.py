@@ -14,12 +14,17 @@ class NetConnect():
         self.config = config
         self.ecals = Ecals(self.config['ecals_url'])
 
-    def query(self, product_id, query_data):
+    def build(self, product_id, query_data):
         request_data = self._get_base_request_data()
         request_data.update(query_data)
 
-        return self._post_xml(_dict_to_xml(
-            self._wrap_request_with_header({product_id: request_data}), 'NetConnectRequest'))
+        return _dict_to_xml(self._wrap_request_with_header({product_id: request_data}), 'NetConnectRequest')
+
+    def execute(self, request_xml):
+        return self._post_xml(request_xml)
+
+    def query(self, product_id, query_data):
+        self.execute(self.build(product_id, query-data))
 
     def _wrap_request_with_header(self, product_data):
         return {
@@ -142,5 +147,3 @@ def _dict_to_xml(data_dict, root=None):
 def _log_pretty_xml(xml, header=None):
     header = "\n======%s======\n" % header.upper() if header else "\n"
     logging.info("%s%s" % (header, parseString(xml).toprettyxml()))
-
-
