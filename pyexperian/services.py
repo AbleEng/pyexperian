@@ -20,11 +20,11 @@ class NetConnect():
 
         return _dict_to_xml(self._wrap_request_with_header({product_id: request_data}), 'NetConnectRequest')
 
-    def execute(self, request_xml):
-        return self._post_xml(request_xml)
+    def execute(self, request_xml, **kwargs):
+        return self._post_xml(request_xml, **kwargs)
 
-    def query(self, product_id, query_data):
-        self.execute(self.build(product_id, query-data))
+    def query(self, product_id, query_data, **kwargs):
+        self.execute(self.build(product_id, query-data), **kwargs)
 
     def _wrap_request_with_header(self, product_data):
         return {
@@ -52,7 +52,7 @@ class NetConnect():
             }
         }
 
-    def _post_xml(self, xml):
+    def _post_xml(self, xml, **kwargs):
         # Lock them out if too many bad auth attempts
         if NetConnect.failed_auth_attempts >= constants.MAX_AUTH_ATTEMPTS:
             raise exceptions.MaxAuthAttemptsException()
@@ -67,7 +67,7 @@ class NetConnect():
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = (self.config['user_id'], self.config['user_pw'])
 
-        response = session.get_session().post(url, headers=headers, auth=auth, data=data)
+        response = session.get_session().post(url, headers=headers, auth=auth, data=data, **kwargs)
 
         logging.info(response.text)
 
