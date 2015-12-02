@@ -24,7 +24,7 @@ class NetConnect():
         return self._post_xml(request_xml, **kwargs)
 
     def query(self, product_id, query_data, **kwargs):
-        self.execute(self.build(product_id, query-data), **kwargs)
+        self.execute(self.build(product_id, query_data), **kwargs)
 
     def _wrap_request_with_header(self, product_data):
         return {
