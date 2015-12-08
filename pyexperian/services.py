@@ -5,6 +5,7 @@ import urllib
 import re
 import time
 import logging
+import requests
 
 
 class NetConnect():
@@ -67,7 +68,7 @@ class NetConnect():
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = (self.config['user_id'], self.config['user_pw'])
 
-        response = session.get_session().post(url, headers=headers, auth=auth, data=data, **kwargs)
+        response = requests.post(url, headers=headers, auth=auth, data=data, **kwargs)
 
         logging.info(response.text)
 
@@ -105,7 +106,7 @@ class Ecals():
 
     def _fetch_net_connect_url(self):
         logging.info("Fetching new Net Connect URL from ECALS.")
-        response = session.get_session().get(self.ecals_url)
+        response = requests.get(self.ecals_url)
         if response.status_code == constants.HTTP_STATUS_OK:
             net_connect_url = response.text
             if Ecals.is_valid_net_connect_url(net_connect_url):
