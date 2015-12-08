@@ -1,5 +1,5 @@
 from pyexperian.lib import dicttoxml
-from pyexperian import constants, exceptions, session
+from pyexperian import constants, exceptions
 from xml.dom.minidom import parseString
 import urllib
 import re
